@@ -1,0 +1,50 @@
+version: '3'
+
+services:
+  backend:
+    container_name: backend
+    build:
+      context: ./
+    image: newspaper-service
+    volumes:
+      - ./src:/usr/src/app/src
+    networks:
+      - db-network
+    depends_on:
+      - db
+    ports:
+      - 3000:3000
+    command: npx nodemon app.js
+
+  db:
+    image: mongo
+    restart: always
+    volumes:
+      - mongo-data:/data/db
+      - ./src/setup://docker-entrypoint-initdb.d
+    networks:
+      - express-network
+      - db-network
+    ports:
+      - 27017:27017
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    networks:
+      - express-network
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=db
+
+networks:
+  db-network:
+    name: db-network
+    driver: bridge
+  express-network:
+    name: express-network
+    driver: bridge
+
+volumes:
+  mongo-data:
